@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
     <style>
         /* enable smooth scrolling site-wide */
         html {
@@ -22,262 +23,386 @@
 
 <body class="bg-stone-900 bg-[url('assets/bg_tiles.png')] bg-cover">
     <aside class="fixed top-0 left-0 h-full w-56 bg-stone-950/95 border-r border-stone-800 z-40 flex flex-col pt-8">
-        <h2 class="text-green-400 text-xl font-bold px-6 mb-6">Kirka Gambling</h2>
+        <h2 class="text-green-400 text-xl px-6 mb-6">Kirka Gambling</h2>
         <nav class="flex-1">
             <ul class="space-y-2 px-4">
                 <li>
-                    <a href="#item-specific" class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Item Specific Crates</a>
+                    <a href="#item-specific"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Item Specific
+                        Crates</a>
                 </li>
                 <li>
-                    <a href="#color-cases" class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Color Cases</a>
-                    </li>
+                    <a href="#color-cases"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Color Cases</a>
+                </li>
                 <li>
-                    <a href="#themed-cases" class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Themed Cases</a>
+                    <a href="#themed-cases"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Themed Cases</a>
+                </li>
+                <li>
+                    <a href="#holiday-cases"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Holiday Cases</a>
                 </li>
             </ul>
         </nav>
     </aside>
+    <nav class="fixed top-0 right-0 h-16 bg-stone-950/95 border-b border-stone-800 z-40 flex flex-row items-center pr-8">
+        <ul class="flex flex-row gap-6 items-center">
+            <li id="inventoryLink" class="hidden">
+                <a href="inventory/index.html" class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">
+                    <img src="/imgs/inventory.svg" alt="Inventory" class="w-6 h-6">
+                </a>
+            </li>
+            <li id="coinDisplay" class="hidden">
+                <a class="text-white font-semibold">Coins: <span id="coinAmount" class="text-green-400">0</span></a>
+            </li>
+            <li id="loginDisplay">
+                <button id="googleLoginBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition font-semibold">
+                    Login with Google
+                </button>
+            </li>
+            <li id="logoutDisplay" class="hidden">
+                <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition font-semibold">
+                    Logout
+                </button>
+            </li>
+        </ul>
+    </nav>
     <main class="ml-56">
-    <h1 class="flex justify-center items-center gap-3 text-4xl font-extrabold text-green-400 mt-12">
-        <img src="/imgs/favicon.png" alt="Kirka Cases" class="w-12 h-12 object-contain">
-        <span class="text-white text-2xl">Kirka</span>
-        <strong class="text-green-400">CASE OPENINGS</strong>
-    </h1>
+        <button id="backToTopBtn"
+            class="fixed bottom-8 right-8 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition opacity-0 pointer-events-none z-50"
+            style="opacity: 0; pointer-events: none;">
+            <img src="/imgs/uptop.svg" alt="Back to Top">
+        </button>
 
-    <div class="flex justify-center mt-8 flex-col items-center">
-        <h2 class="text-white text-2xl mb-2 font-bold">Free Crate!</h2>
-        <div id="crate-viewport"
-            class="relative w-96 h-36 overflow-hidden rounded-md bg-stone-900/70 border border-stone-700">
+        <h1 class="flex justify-center items-center gap-3 text-4xl font-extrabold text-green-400 mt-12">
+            <img src="/imgs/favicon.png" alt="Kirka Cases" class="w-12 h-12 object-contain">
+            <span class="text-white text-2xl">Kirka</span>
+            <strong class="text-green-400">CASE OPENINGS</strong>
+        </h1>
+
+        <div class="flex justify-center mt-8 flex-col items-center">
+            <h2 class="text-white text-2xl mb-2">Free Crate!</h2>
+            <div id="crate-viewport"
+                class="relative w-96 h-36 overflow-hidden rounded-md bg-stone-900/70 border border-stone-700">
 
 
-            <div class="pointer-events-none absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/80">
+                <div
+                    class="pointer-events-none absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/80">
+                </div>
+
+                <div id="crate-result"
+                    class="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1 text-sm text-white/90 bg-black/50 px-2 py-0.5 rounded hidden">
+                </div>
             </div>
 
-            <div id="crate-result"
-                class="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1 text-sm text-white/90 bg-black/50 px-2 py-0.5 rounded hidden">
-            </div>
-        </div>
-
-        <div class="mt-3 w-96 text-xs text-white/80">
-            <div class="flex justify-between items-center mb-2">
-                <span class="font-semibold">Odds</span>
-                <span class="text-right">Chance</span>
-            </div>
-            <div class="grid grid-cols-6 gap-2 text-center">
-                <div class="px-1 py-1 bg-stone-800 rounded rarity-milspec text-[10px]">Common<br><span
-                        class="text-green-400">50%</span></div>
-                <div class="px-1 py-1 bg-stone-800 rounded rarity-restricted text-[10px]">Rare<br><span
-                        class="text-sky-400">30%</span></div>
-                <div class="px-1 py-1 bg-stone-800 rounded rarity-classified text-[10px]">Epic<br><span
-                        class="text-purple-600">7%</span></div>
-                <div class="px-1 py-1 bg-stone-800 rounded rarity-covert text-[10px]">Legendary<br><span
-                        class="text-yellow-500">2%</span></div>
-                <div class="px-1 py-1 bg-stone-800 rounded rarity-knife text-[10px]">Mythical<br><span
-                        class="text-red-600">0.8%</span></div>
-                <div class="px-1 py-1 bg-stone-800 rounded rarity-knife text-[10px]"><span
-                        class="text-white">Paranorm</span><br><span class="text-black"
-                        style="text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;">0.2%</span>
+            <div class="mt-3 w-96 text-xs text-white/80">
+                <div class="flex justify-between items-center mb-2">
+                    <span class=">Odds</span>
+                    <span class="text-right">Chance</span>
+                </div>
+                <div class="grid grid-cols-6 gap-2 text-center">
+                    <div class="px-1 py-1 bg-stone-800 rounded rarity-milspec text-[10px]">Common<br><span
+                            class="text-green-400">50%</span></div>
+                    <div class="px-1 py-1 bg-stone-800 rounded rarity-restricted text-[10px]">Rare<br><span
+                            class="text-sky-400">30%</span></div>
+                    <div class="px-1 py-1 bg-stone-800 rounded rarity-classified text-[10px]">Epic<br><span
+                            class="text-purple-600">7%</span></div>
+                    <div class="px-1 py-1 bg-stone-800 rounded rarity-covert text-[10px]">Legendary<br><span
+                            class="text-yellow-500">2%</span></div>
+                    <div class="px-1 py-1 bg-stone-800 rounded rarity-knife text-[10px]">Mythical<br><span
+                            class="text-red-600">0.8%</span></div>
+                    <div class="px-1 py-1 bg-stone-800 rounded rarity-knife text-[10px]"><span
+                            class="text-white">Paranorm</span><br><span class="text-black"
+                            style="text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;">0.2%</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="flex justify-center mt-10">
-        <button id="spinBtn" class="px-6 py-3 bg-green-500 text-white font-bold rounded hover:bg-green-600 shadow-lg">
-            Open Case
-        </button>
-    </div>
-
-    <div class="flex justify-center mt-10 flex-col items-center">
-        <h2 class="text-white text-2xl mb-2 font-bold">More Cases</h2>
-        <h2 class="text-white text-2xl mb-2 font-bold self-start text-left ml-6" id="item-specific">Item Specific</h2>
-        <hr class="h-px bg-white border-0 w-full my-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/glove_case.jpg" alt="SCAR Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">SCAR Case</h3>
-                <a href="link/to/open-glove-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/the_brittle_case.jpg" alt="Revolver Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Revolver Case</h3>
-                <a href="link/to/open-brittle-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/covert_supply.jpg" alt="Vita Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Vita Case</h3>
-                <a href="link/to/open-covert-supply"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/m60_case.jpg" alt="M60 Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">M60 Case</h3>
-                <a href="link/to/open-m60-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/lar_case.jpg" alt="LAR Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">LAR Case</h3>
-                <a href="link/to/open-lar-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/ar9_case.jpg" alt="AR-9 Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">AR-9 Case</h3>
-                <a href="link/to/open-ar9-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/melees_case.jpg" alt="Melees Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Melees Case</h3>
-                <a href="link/to/open-melees-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/shark_case.jpg" alt="Shark Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Shark Case</h3>
-                <a href="link/to/open-shark-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/weaties_case.jpg" alt="Weaties Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Weaties Case</h3>
-                <a href="link/to/open-weaties-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/mac10_case.jpg" alt="Mac-10 Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Mac-10 Case</h3>
-                <a href="link/to/open-mac10-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/characters_case.jpg" alt="Characters Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Characters Case</h3>
-                <a href="link/to/open-characters-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-        </div>
-    <h2 class="text-white text-2xl mb-2 font-bold self-start text-left ml-6" id="color-cases">Color Cases</h2>
-        <hr class="h-px bg-white border-0 w-full my-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/glove_case.jpg" alt="Red Case"
-                class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Red Case</h3>
-            <a href="link/to/open-glove-case"
-                class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/the_brittle_case.jpg" alt="Orange Case"
-                class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Orange Case</h3>
-            <a href="link/to/open-brittle-case"
-                class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/covert_supply.jpg" alt="Yellow Case"
-                class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Yellow Case</h3>
-            <a href="link/to/open-covert-supply"
-                class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                Case</a>
-            </div>
-
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/m60_case.jpg" alt="Green Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Green Case</h3>
-            <a href="link/to/open-m60-case"
-                class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/lar_case.jpg" alt="Blue Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Blue Case</h3>
-            <a href="link/to/open-lar-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/ar9_case.jpg" alt="Purple Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Purple Case</h3>
-                <a href="link/to/open-ar9-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/melees_case.jpg" alt="Rainbow Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">Rainbow Cases</h3>
-                <a href="link/to/open-melees-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-            <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-                <img src="assets/crates/shark_case.jpg" alt="White and Black Case"
-                    class="w-full h-36 object-cover mb-3 rounded-sm">
-                <h3 class="text-white text-xl font-semibold">White and Black Cases</h3>
-                <a href="link/to/open-shark-case"
-                    class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
-                    Case</a>
-            </div>
-        </div>
-    <h2 class="text-white text-2xl mb-2 font-bold self-start text-left ml-6" id="themed-cases">Themed Cases</h2>
-    <hr class="h-px bg-white border-0 w-full my-4">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/glove_case.jpg" alt="Anime Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Anime Case</h3>
-            <a href="link/to/open-steampunk-case" class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open Case</a>
+        <div class="flex justify-center mt-10">
+            <button id="spinBtn"
+                class="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 shadow-lg">
+                Open Case
+            </button>
         </div>
 
-        <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/the_brittle_case.jpg" alt="Halloween Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Halloween Case</h3>
-            <a href="link/to/open-Halloween-case" class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open Case</a>
-        </div>
+        <div class="flex justify-center mt-10 flex-col items-center">
+            <h2 class="text-white text-2xl mb-2">More Cases</h2>
+            <h2 class="text-white text-2xl mb-2 self-start text-left ml-6" id="item-specific">Item Specific
+            </h2>
+            <hr class="h-px bg-white border-0 w-full my-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/glove_case.jpg" alt="SCAR Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">SCAR Case</h3>
+                    <a href="link/to/open-glove-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/the_brittle_case.jpg" alt="Revolver Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Revolver Case</h3>
+                    <a href="link/to/open-brittle-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/covert_supply.jpg" alt="Vita Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Vita Case</h3>
+                    <a href="link/to/open-covert-supply"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
 
-        <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/covert_supply.jpg" alt="Christmas Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Christmas Case</h3>
-            <a href="link/to/open-nature-case" class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open Case</a>
-        </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/m60_case.jpg" alt="M60 Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">M60 Case</h3>
+                    <a href="link/to/open-m60-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/lar_case.jpg" alt="LAR Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">LAR Case</h3>
+                    <a href="link/to/open-lar-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/ar9_case.jpg" alt="AR-9 Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">AR-9 Case</h3>
+                    <a href="link/to/open-ar9-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/shark_case.jpg" alt="Shark Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Shark Case</h3>
+                    <a href="link/to/open-shark-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/weaties_case.jpg" alt="Weaties Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Weaties Case</h3>
+                    <a href="link/to/open-weaties-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/mac10_case.jpg" alt="Mac-10 Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Mac-10 Case</h3>
+                    <a href="link/to/open-mac10-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/characters_case.jpg" alt="Characters Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Characters Case</h3>
+                    <a href="link/to/open-characters-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/melees_case.jpg" alt="Melees Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Melees Case</h3>
+                    <a href="link/to/open-melees-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+            </div>
+            <h2 class="text-white text-2xl mb-2 self-start text-left ml-6" id="color-cases">Color Cases</h2>
+            <hr class="h-px bg-white border-0 w-full my-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/glove_case.jpg" alt="Red Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Red Case</h3>
+                    <a href="link/to/open-glove-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/the_brittle_case.jpg" alt="Orange Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Orange Case</h3>
+                    <a href="link/to/open-brittle-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/covert_supply.jpg" alt="Yellow Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Yellow Case</h3>
+                    <a href="link/to/open-covert-supply"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
 
-        <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
-            <img src="assets/crates/m60_case.jpg" alt="Futureistic Case" class="w-full h-36 object-cover mb-3 rounded-sm">
-            <h3 class="text-white text-xl font-semibold">Futureistic Case</h3>
-            <a href="link/to/open-military-case" class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open Case</a>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/m60_case.jpg" alt="Green Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Green Case</h3>
+                    <a href="link/to/open-m60-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/lar_case.jpg" alt="Blue Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Blue Case</h3>
+                    <a href="link/to/open-lar-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/ar9_case.jpg" alt="Purple Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Purple Case</h3>
+                    <a href="link/to/open-ar9-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/melees_case.jpg" alt="Rainbow Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Rainbow Cases</h3>
+                    <a href="link/to/open-melees-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/shark_case.jpg" alt="White and Black Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">White and Black Cases</h3>
+                    <a href="link/to/open-shark-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+            </div>
+            <h2 class="text-white text-2xl mb-2 self-start text-left ml-6" id="themed-cases">Themed Cases</h2>
+            <hr class="h-px bg-white border-0 w-full my-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/glove_case.jpg" alt="Anime Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Anime Case</h3>
+                    <a href="link/to/open-steampunk-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/the_brittle_case.jpg" alt="Fantasy Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Fantasy Case</h3>
+                    <a href="link/to/open-fantasy-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+
+
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/m60_case.jpg" alt="Futureistic Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Futureistic Case</h3>
+                    <a href="link/to/open-military-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+            </div>
+            <h2 class="text-white text-2xl mb-2 self-start text-left ml-6" id="holiday-cases">Holiday Cases
+            </h2>
+            <hr class="h-px bg-white border-0 w-full my-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/glove_case.jpg" alt="Christmas Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Christmas Case</h3>
+                    <a href="link/to/open-christmas-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/the_brittle_case.jpg" alt="New Year Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">New Year</h3>
+                    <a href="link/to/open-newyear-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/covert_supply.jpg" alt="Easter Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Easter</h3>
+                    <a href="link/to/open-easter-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/m60_case.jpg" alt="Valentines Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Valentines Case</h3>
+                    <a href="link/to/open-valentine-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+                <div class="bg-zinc-700 rounded-md p-6 w-72 h-64 flex flex-col items-center">
+                    <img src="assets/crates/m60_case.jpg" alt="Halloween Case"
+                        class="w-full h-36 object-cover mb-3 rounded-sm">
+                    <h3 class="text-white text-xl">Halloween Case</h3>
+                    <a href="link/to/open-halloween-case"
+                        class="mt-4 block px-6 py-3 bg-green-500 text-white text-center rounded hover:bg-green-600 w-full">Open
+                        Case</a>
+                </div>
+            </div>
         </div>
-    </div>
-    </div>
-    </div>
+        </div>
+        <footer class="mt-12 mb-6 text-center text-white/70 text-sm">
+            <p class="mb-2">Kirka Gambling.</p>
+            <p class="text-xs"><span class="text-green-400">Disclaimer:</span> This platform is for entertainment purposes only. We do not endorse or facilitate real money gambling. This site is not affiliated with Kirka.io or any other entity.</p>
+        </footer>
     </main>
 
-    <!-- add small smooth-scroll helper for internal anchors (keeps a small top offset) -->
+    <button id="backToTopBtn"
+        class="fixed bottom-8 right-8 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition opacity-0 pointer-events-none z-50"
+        style="opacity: 0; pointer-events: none;">
+        <img src="/imgs/uptop.svg" alt="Back to Top">
+    </button>
+
+    <script>
+        // Back to Top Button functionality
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        
+        window.addEventListener('scroll', function () {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.style.opacity = '1';
+                backToTopBtn.style.pointerEvents = 'auto';
+            } else {
+                backToTopBtn.style.opacity = '0';
+                backToTopBtn.style.pointerEvents = 'none';
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+
     <script>
         (function () {
             const OFFSET = 16; // px to offset from top
@@ -295,6 +420,63 @@
     </script>
 
     <script src="./js/crate.js"></script>
+    <script>
+        // Initialize Google Sign-In and manage login state
+        window.onload = function () {
+            checkLoginState();
+        };
+
+        function checkLoginState() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            updateUIForLoginState(isLoggedIn);
+        }
+
+        function updateUIForLoginState(isLoggedIn) {
+            const loginDisplay = document.getElementById('loginDisplay');
+            const logoutDisplay = document.getElementById('logoutDisplay');
+            const coinDisplay = document.getElementById('coinDisplay');
+            const inventoryLink = document.getElementById('inventoryLink');
+
+            if (isLoggedIn) {
+                loginDisplay.classList.add('hidden');
+                logoutDisplay.classList.remove('hidden');
+                coinDisplay.classList.remove('hidden');
+                inventoryLink.classList.remove('hidden');
+            } else {
+                loginDisplay.classList.remove('hidden');
+                logoutDisplay.classList.add('hidden');
+                coinDisplay.classList.add('hidden');
+                inventoryLink.classList.add('hidden');
+            }
+        }
+
+        // Google Sign-In callback
+        function handleCredentialResponse(response) {
+            // Store login state
+            localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('userToken', response.credential);
+            updateUIForLoginState(true);
+        }
+
+        document.getElementById('googleLoginBtn').addEventListener('click', function () {
+            google.accounts.id.initialize({
+                client_id: 'YOUR_GOOGLE_CLIENT_ID_HERE', // Replace with your actual Google Client ID
+                callback: handleCredentialResponse
+            });
+            google.accounts.id.renderButton(
+                document.getElementById('googleLoginBtn'),
+                { theme: 'filled_blue', size: 'large' }
+            );
+            google.accounts.id.prompt();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('userToken');
+            updateUIForLoginState(false);
+            google.accounts.id.disableAutoSelect();
+        });
+    </script>
 
 </body>
 
