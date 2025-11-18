@@ -450,9 +450,7 @@
             }
         }
 
-        // Google Sign-In callback
         function handleCredentialResponse(response) {
-            // Store login state
             localStorage.setItem('userLoggedIn', 'true');
             localStorage.setItem('userToken', response.credential);
             updateUIForLoginState(true);
@@ -460,7 +458,7 @@
 
         document.getElementById('googleLoginBtn').addEventListener('click', function () {
             google.accounts.id.initialize({
-                client_id: 'YOUR_GOOGLE_CLIENT_ID_HERE', // Replace with your actual Google Client ID
+                client_id: 'process.env.GOOGLE_CLIENT_ID',
                 callback: handleCredentialResponse
             });
             google.accounts.id.renderButton(
