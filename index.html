@@ -46,23 +46,26 @@
             </ul>
         </nav>
     </aside>
-    <nav class="fixed top-0 right-0 h-16 bg-stone-950/95 border-b border-stone-800 z-40 flex flex-row items-center pr-8">
+    <nav
+        class="fixed top-0 right-0 h-16 bg-stone-950/95 border-b border-stone-800 z-40 flex flex-row items-center pr-8">
         <ul class="flex flex-row gap-6 items-center">
             <li id="inventoryLink" class="hidden">
                 <a href="inventory/index.html" class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">
-                    <img src="/imgs/inventory.svg" alt="Inventory" class="w-6 h-6">
+                    <img src="/imgs/backpack.svg" alt="Inventory" class="w-6 h-6 inline-block">
                 </a>
             </li>
             <li id="coinDisplay" class="hidden">
                 <a class="text-white font-semibold">Coins: <span id="coinAmount" class="text-green-400">0</span></a>
             </li>
             <li id="loginDisplay">
-                <button id="googleLoginBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition font-semibold">
+                <button id="googleLoginBtn"
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition font-semibold">
                     Login with Google
                 </button>
             </li>
             <li id="logoutDisplay" class="hidden">
-                <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition font-semibold">
+                <button id="logoutBtn"
+                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition font-semibold">
                     Logout
                 </button>
             </li>
@@ -98,31 +101,22 @@
 
             <div class="mt-3 w-96 text-xs text-white/80">
                 <div class="flex justify-between items-center mb-2">
-                    <span class=">Odds</span>
+                    <span class="">Odds</span>
                     <span class="text-right">Chance</span>
                 </div>
-                <div class="grid grid-cols-6 gap-2 text-center">
+                <div class="grid grid-cols-3 gap-2 text-center">
                     <div class="px-1 py-1 bg-stone-800 rounded rarity-milspec text-[10px]">Common<br><span
-                            class="text-green-400">50%</span></div>
+                            class="text-green-400">80%</span></div>
                     <div class="px-1 py-1 bg-stone-800 rounded rarity-restricted text-[10px]">Rare<br><span
-                            class="text-sky-400">30%</span></div>
+                            class="text-sky-400">15%</span></div>
                     <div class="px-1 py-1 bg-stone-800 rounded rarity-classified text-[10px]">Epic<br><span
-                            class="text-purple-600">7%</span></div>
-                    <div class="px-1 py-1 bg-stone-800 rounded rarity-covert text-[10px]">Legendary<br><span
-                            class="text-yellow-500">2%</span></div>
-                    <div class="px-1 py-1 bg-stone-800 rounded rarity-knife text-[10px]">Mythical<br><span
-                            class="text-red-600">0.8%</span></div>
-                    <div class="px-1 py-1 bg-stone-800 rounded rarity-knife text-[10px]"><span
-                            class="text-white">Paranorm</span><br><span class="text-black"
-                            style="text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;">0.2%</span>
-                    </div>
+                            class="text-purple-600">5%</span></div>
                 </div>
             </div>
         </div>
 
         <div class="flex justify-center mt-10">
-            <button id="spinBtn"
-                class="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 shadow-lg">
+            <button id="spinBtn" class="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 shadow-lg">
                 Open Case
             </button>
         </div>
@@ -374,7 +368,9 @@
         </div>
         <footer class="mt-12 mb-6 text-center text-white/70 text-sm">
             <p class="mb-2">Kirka Gambling.</p>
-            <p class="text-xs"><span class="text-green-400">Disclaimer:</span> This platform is for entertainment purposes only. We do not endorse or facilitate real money gambling. This site is not affiliated with Kirka.io or any other entity.</p>
+            <p class="text-xs"><span class="text-green-400">Disclaimer:</span> This platform is for entertainment
+                purposes only. We do not endorse or facilitate real money gambling. This site is not affiliated with
+                Kirka.io or any other entity.</p>
         </footer>
     </main>
 
@@ -387,7 +383,7 @@
     <script>
         // Back to Top Button functionality
         const backToTopBtn = document.getElementById('backToTopBtn');
-        
+
         window.addEventListener('scroll', function () {
             if (window.pageYOffset > 300) {
                 backToTopBtn.style.opacity = '1';
@@ -397,7 +393,7 @@
                 backToTopBtn.style.pointerEvents = 'none';
             }
         });
-        
+
         backToTopBtn.addEventListener('click', function () {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
@@ -419,6 +415,7 @@
         })();
     </script>
 
+    <script src="./js/user-data.js"></script>
     <script src="./js/crate.js"></script>
     <script>
         // Initialize Google Sign-In and manage login state
@@ -428,7 +425,13 @@
 
         function checkLoginState() {
             const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const userEmail = localStorage.getItem('userEmail');
             updateUIForLoginState(isLoggedIn);
+            
+            if (isLoggedIn && userEmail) {
+                userDataManager.initializeUser(userEmail);
+                userDataManager.updateCoinDisplay();
+            }
         }
 
         function updateUIForLoginState(isLoggedIn) {
@@ -451,8 +454,28 @@
         }
 
         function handleCredentialResponse(response) {
+            // Decode JWT to get user email
+            const base64Url = response.credential.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const userData = JSON.parse(jsonPayload);
+            const userEmail = userData.email;
+
             localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('userEmail', userEmail);
             localStorage.setItem('userToken', response.credential);
+
+            // Initialize user data manager
+            userDataManager.initializeUser(userEmail);
+            
+            // Check if new user, otherwise load existing data
+            if (!localStorage.getItem(`kirka_user_${userEmail}_coins`)) {
+                userDataManager.createNewUser(userEmail);
+            }
+            
+            userDataManager.updateCoinDisplay();
             updateUIForLoginState(true);
         }
 
@@ -469,7 +492,9 @@
         });
 
         document.getElementById('logoutBtn').addEventListener('click', function () {
+            userDataManager.clearUserData();
             localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('userEmail');
             localStorage.removeItem('userToken');
             updateUIForLoginState(false);
             google.accounts.id.disableAutoSelect();

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - Kirka Gambling</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Russo One', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        .rarity-common {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .rarity-rare {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        }
+
+        .rarity-epic {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+        }
+
+        .rarity-legendary {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .rarity-mythical {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .rarity-paranormal {
+            background: linear-gradient(135deg, #000000 0%, #404040 100%);
+            text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+        }
+    </style>
+</head>
+
+<body class="bg-stone-900 bg-[url('../assets/bg_tiles.png')] bg-cover">
+    <aside class="fixed top-0 left-0 h-full w-56 bg-stone-950/95 border-r border-stone-800 z-40 flex flex-col pt-8">
+        <h2 class="text-green-400 text-xl px-6 mb-6">Kirka Gambling</h2>
+        <nav class="flex-1">
+            <ul class="space-y-2 px-4">
+                <li>
+                    <a href="../index.html"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Back to Cases</a>
+                </li>
+                <li>
+                    <a href="#common"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Common</a>
+                </li>
+                <li>
+                    <a href="#rare"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Rare</a>
+                </li>
+                <li>
+                    <a href="#epic"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Epic</a>
+                </li>
+                <li>
+                    <a href="#legendary"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Legendary</a>
+                </li>
+                <li>
+                    <a href="#mythical"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Mythical</a>
+                </li>
+                <li>
+                    <a href="#paranormal"
+                        class="block py-2 px-3 rounded text-white hover:bg-stone-800 transition">Paranormal</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <nav class="fixed top-0 right-0 h-16 bg-stone-950/95 border-b border-stone-800 z-40 flex flex-row items-center pr-8">
+        <ul class="flex flex-row gap-6 items-center">
+            <li id="coinDisplay" class="hidden">
+                <a class="text-white font-semibold">Coins: <span id="coinAmount" class="text-green-400">0</span></a>
+            </li>
+            <li id="loginDisplay">
+                <button id="googleLoginBtn"
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition font-semibold">
+                    Login with Google
+                </button>
+            </li>
+            <li id="logoutDisplay" class="hidden">
+                <button id="logoutBtn"
+                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition font-semibold">
+                    Logout
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="ml-56 mt-20 pb-12">
+        <h1 class="text-4xl font-extrabold text-green-400 text-center mb-4">
+            Your Inventory
+        </h1>
+        <p class="text-center text-white/70 mb-8">Total Items: <span id="totalItems" class="text-green-400">0</span></p>
+
+        <!-- Common Items -->
+        <section id="common" class="mb-12">
+            <h2 class="text-2xl font-bold text-green-400 ml-6 mb-4">Common Items</h2>
+            <div id="commonItems" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-6">
+                <div class="col-span-full text-center text-white/50">No items yet</div>
+            </div>
+        </section>
+
+        <!-- Rare Items -->
+        <section id="rare" class="mb-12">
+            <h2 class="text-2xl font-bold text-sky-400 ml-6 mb-4">Rare Items</h2>
+            <div id="rareItems" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-6">
+                <div class="col-span-full text-center text-white/50">No items yet</div>
+            </div>
+        </section>
+
+        <!-- Epic Items -->
+        <section id="epic" class="mb-12">
+            <h2 class="text-2xl font-bold text-purple-600 ml-6 mb-4">Epic Items</h2>
+            <div id="epicItems" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-6">
+                <div class="col-span-full text-center text-white/50">No items yet</div>
+            </div>
+        </section>
+
+        <!-- Legendary Items -->
+        <section id="legendary" class="mb-12">
+            <h2 class="text-2xl font-bold text-yellow-500 ml-6 mb-4">Legendary Items</h2>
+            <div id="legendaryItems" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-6">
+                <div class="col-span-full text-center text-white/50">No items yet</div>
+            </div>
+        </section>
+
+        <!-- Mythical Items -->
+        <section id="mythical" class="mb-12">
+            <h2 class="text-2xl font-bold text-red-600 ml-6 mb-4">Mythical Items</h2>
+            <div id="mythicalItems" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-6">
+                <div class="col-span-full text-center text-white/50">No items yet</div>
+            </div>
+        </section>
+
+        <!-- Paranormal Items -->
+        <section id="paranormal" class="mb-12">
+            <h2 class="text-2xl font-bold text-white ml-6 mb-4">Paranormal Items</h2>
+            <div id="paranormalItems" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-6">
+                <div class="col-span-full text-center text-white/50">No items yet</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/user-data.js"></script>
+    <script>
+        // Initialize page
+        window.onload = function () {
+            checkLoginState();
+            displayInventory();
+        };
+
+        function checkLoginState() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const userEmail = localStorage.getItem('userEmail');
+            updateUIForLoginState(isLoggedIn);
+            
+            if (isLoggedIn && userEmail) {
+                userDataManager.initializeUser(userEmail);
+                userDataManager.updateCoinDisplay();
+            }
+        }
+
+        function updateUIForLoginState(isLoggedIn) {
+            const loginDisplay = document.getElementById('loginDisplay');
+            const logoutDisplay = document.getElementById('logoutDisplay');
+            const coinDisplay = document.getElementById('coinDisplay');
+
+            if (isLoggedIn) {
+                loginDisplay.classList.add('hidden');
+                logoutDisplay.classList.remove('hidden');
+                coinDisplay.classList.remove('hidden');
+            } else {
+                loginDisplay.classList.remove('hidden');
+                logoutDisplay.classList.add('hidden');
+                coinDisplay.classList.add('hidden');
+            }
+        }
+
+        function displayInventory() {
+            const inventory = userDataManager.getInventory();
+            const rarityMap = {
+                'common': 'commonItems',
+                'rare': 'rareItems',
+                'epic': 'epicItems',
+                'legendary': 'legendaryItems',
+                'mythical': 'mythicalItems',
+                'paranormal': 'paranormalItems'
+            };
+
+            // Clear all sections
+            Object.values(rarityMap).forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+
+            // Group items by rarity
+            const itemsByRarity = {};
+            inventory.forEach(item => {
+                const rarity = item.rarity || 'common';
+                if (!itemsByRarity[rarity]) {
+                    itemsByRarity[rarity] = [];
+                }
+                itemsByRarity[rarity].push(item);
+            });
+
+            // Display items
+            Object.entries(itemsByRarity).forEach(([rarity, items]) => {
+                const containerId = rarityMap[rarity];
+                const container = document.getElementById(containerId);
+                
+                if (items.length === 0) {
+                    container.innerHTML = '<div class="col-span-full text-center text-white/50">No items yet</div>';
+                } else {
+                    container.innerHTML = items.map(item => `
+                        <div class="bg-zinc-700 rounded-lg p-4 flex flex-col items-center justify-between hover:bg-zinc-600 transition">
+                            <div class="w-full h-24 mb-3 rounded flex items-center justify-center ${getRarityClass(rarity)}">
+                                <span class="text-white text-2xl font-bold">⚔️</span>
+                            </div>
+                            <h3 class="text-white text-center font-semibold mb-2">${item.name}</h3>
+                            <p class="text-white/70 text-sm text-center mb-2">${new Date(item.addedAt).toLocaleDateString()}</p>
+                            <button onclick="removeItem(${item.id})" class="w-full px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition">
+                                Sell
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            });
+
+            // Update total items
+            document.getElementById('totalItems').textContent = inventory.length;
+        }
+
+        function getRarityClass(rarity) {
+            const classMap = {
+                'common': 'rarity-common',
+                'rare': 'rarity-rare',
+                'epic': 'rarity-epic',
+                'legendary': 'rarity-legendary',
+                'mythical': 'rarity-mythical',
+                'paranormal': 'rarity-paranormal'
+            };
+            return classMap[rarity] || 'rarity-common';
+        }
+
+        function removeItem(itemId) {
+            userDataManager.removeInventoryItem(itemId);
+            displayInventory();
+        }
+
+        function handleCredentialResponse(response) {
+            const base64Url = response.credential.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const userData = JSON.parse(jsonPayload);
+            const userEmail = userData.email;
+
+            localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('userEmail', userEmail);
+            localStorage.setItem('userToken', response.credential);
+
+            userDataManager.initializeUser(userEmail);
+            
+            if (!localStorage.getItem(`kirka_user_${userEmail}_coins`)) {
+                userDataManager.createNewUser(userEmail);
+            }
+            
+            userDataManager.updateCoinDisplay();
+            updateUIForLoginState(true);
+            displayInventory();
+        }
+
+        document.getElementById('googleLoginBtn').addEventListener('click', function () {
+            google.accounts.id.initialize({
+                client_id: '33735740506-im3fh2ne6clrjlmj0l3nerfqro9cmber.apps.googleusercontent.com',
+                callback: handleCredentialResponse
+            });
+            google.accounts.id.renderButton(
+                document.getElementById('googleLoginBtn'),
+                { theme: 'filled_blue', size: 'large' }
+            );
+            google.accounts.id.prompt();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            userDataManager.clearUserData();
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userToken');
+            updateUIForLoginState(false);
+            google.accounts.id.disableAutoSelect();
+        });
+
+        // Smooth scroll for navigation
+        (function () {
+            const OFFSET = 16;
+            document.addEventListener('click', function (e) {
+                const a = e.target.closest('a[href^="#"]');
+                if (!a) return;
+                const id = a.getAttribute('href').slice(1);
+                const target = document.getElementById(id);
+                if (!target) return;
+                e.preventDefault();
+                const y = target.getBoundingClientRect().top + window.pageYOffset - OFFSET;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }, { passive: true });
+        })();
+    </script>
+
+</body>
+
+</html>

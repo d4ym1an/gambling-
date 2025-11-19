@@ -1,185 +1,198 @@
-(() => {
-	// Config: folder containing item images (folder "X" per request)
-	const ITEMS_FOLDER = './X/'; // drop your images in ./X/ relative to index.html
-	const ITEMS_JSON = ITEMS_FOLDER + 'items.json'; // optional: JSON array of filenames
-	const PROBE_MAX = 12; // probe item1.png .. item12.png if no JSON
-	const TILE_WIDTH = 150; // px - width used to calculate positions
-	const VIEWPORT_WIDTH = 384; // should match .w-96 (96*4=384px)
-	const REPEAT_TIMES = 10; // repeat items to make long track
+let priceListData = [];
+let crateItems = [];
 
-	// DOM
-	const track = document.getElementById('crate-track');
-	const spinBtn = document.getElementById('spinBtn');
-	const resultLabel = document.getElementById('crate-result');
-	const viewport = document.getElementById('crate-viewport');
+// Load price list on page load
+fetch('./js/priceList.json')
+    .then(response => response.json())
+    .then(data => {
+        priceListData = data;
+        generateCrateItems();
+    })
+    .catch(error => console.error('Error loading price list:', error));
 
-	let items = []; // array of {src, name}
-	let isSpinning = false;
+function generateCrateItems() {
+    // Map rarity codes to names
+    const rarityMap = {
+        'C': 'common',
+        'R': 'rare',
+        'E': 'epic',
+        'L': 'legendary',
+        'M': 'mythical',
+        'P': 'paranormal'
+    };
 
-	// utility: safe fetch that returns json or null
-	async function tryFetchJson(url) {
-		try {
-			const res = await fetch(url, { cache: 'no-store' });
-			if (!res.ok) return null;
-			return await res.json();
-		} catch (e) {
-			return null;
-		}
-	}
+    // Filter items and create weighted array
+    crateItems = [];
+    
+    // Common items (50%)
+    const commonItems = priceListData.filter(item => item.rarity === 'C' && item.img);
+    for (let i = 0; i < 50; i++) {
+        commonItems.forEach(item => {
+            crateItems.push({
+                name: item.itemName,
+                rarity: rarityMap[item.rarity] || 'common',
+                value: item.price || 10,
+                img: item.img
+            });
+        });
+    }
 
-	// probe for files item1.png..itemN.png (png/jpg/gif)
-	async function probeFiles(max) {
-		const exts = ['png', 'jpg', 'webp', 'jpeg', 'gif'];
-		const found = [];
-		for (let i = 1; i <= max; i++) {
-			for (const ext of exts) {
-				const url = `${ITEMS_FOLDER}item${i}.${ext}`;
-				try {
-					const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-					if (res.ok) {
-						found.push({ src: url, name: `item${i}.${ext}` });
-						break;
-					}
-				} catch (e) {
-					// ignore
-				}
-			}
-		}
-		return found;
-	}
+    // Rare items (30%)
+    const rareItems = priceListData.filter(item => item.rarity === 'R' && item.img);
+    for (let i = 0; i < 30; i++) {
+        rareItems.forEach(item => {
+            crateItems.push({
+                name: item.itemName,
+                rarity: rarityMap[item.rarity] || 'rare',
+                value: item.price || 50,
+                img: item.img
+            });
+        });
+    }
 
-	// load items: prefer items.json, else probe, else fallback placeholders
-	async function loadItems() {
-		// try JSON list
-		const json = await tryFetchJson(ITEMS_JSON);
-		if (Array.isArray(json) && json.length > 0) {
-			return json.map(name => ({ src: ITEMS_FOLDER + name, name }));
-		}
+    // Epic items (7%)
+    const epicItems = priceListData.filter(item => item.rarity === 'E' && item.img);
+    for (let i = 0; i < 7; i++) {
+        epicItems.forEach(item => {
+            crateItems.push({
+                name: item.itemName,
+                rarity: rarityMap[item.rarity] || 'epic',
+                value: item.price || 200,
+                img: item.img
+            });
+        });
+    }
 
-		// probe common names
-		const probed = await probeFiles(PROBE_MAX);
-		if (probed.length > 0) return probed;
+    // Legendary items (2%)
+    const legendaryItems = priceListData.filter(item => item.rarity === 'L' && item.img);
+    for (let i = 0; i < 2; i++) {
+        legendaryItems.forEach(item => {
+            crateItems.push({
+                name: item.itemName,
+                rarity: rarityMap[item.rarity] || 'legendary',
+                value: item.price || 500,
+                img: item.img
+            });
+        });
+    }
 
-		// fallback: placeholder items (no external fetch)
-		const placeholders = [];
-		for (let i = 1; i <= 6; i++) {
-			placeholders.push({
-				src: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${TILE_WIDTH}" height="120"><rect width="100%" height="100%" fill="#2d3748"/><text x="50%" y="50%" font-size="20" fill="#fff" dominant-baseline="middle" text-anchor="middle">Item ${i}</text></svg>`)}`,
-				name: `Item ${i}`
-			});
-		}
-		return placeholders;
-	}
+    // Mythical items (0.8%)
+    const mythicalItems = priceListData.filter(item => item.rarity === 'M' && item.img);
+    for (let i = 0; i < 1; i++) {
+        mythicalItems.forEach(item => {
+            crateItems.push({
+                name: item.itemName,
+                rarity: rarityMap[item.rarity] || 'mythical',
+                value: item.price || 1000,
+                img: item.img
+            });
+        });
+    }
 
-	// populate the track with repeated tiles
-	function buildTrack(items) {
-		track.innerHTML = '';
-		// total tiles = items.length * REPEAT_TIMES
-		const tiles = [];
-		for (let r = 0; r < REPEAT_TIMES; r++) {
-			for (const it of items) {
-				const tile = document.createElement('div');
-				tile.className = 'crate-tile';
-				tile.style.width = TILE_WIDTH + 'px';
-				tile.style.flex = '0 0 ' + TILE_WIDTH + 'px';
-				tile.style.display = 'flex';
-				tile.style.justifyContent = 'center';
-				tile.style.alignItems = 'center';
-				// image
-				const img = document.createElement('img');
-				img.src = it.src;
-				img.alt = it.name;
-				img.title = it.name;
-				img.style.maxHeight = '80%';
-				img.style.maxWidth = '90%';
-				img.style.objectFit = 'contain';
-				tile.appendChild(img);
-				track.appendChild(tile);
-				tiles.push(it);
-			}
-		}
-		// set track width
-		track.style.width = `${tiles.length * TILE_WIDTH}px`;
-		// initial position: center the first real item
-		const initialOffset = (VIEWPORT_WIDTH / 2) - (TILE_WIDTH / 2);
-		track.style.transform = `translateX(${initialOffset}px)`;
-		track.dataset.tiles = JSON.stringify(tiles.map(t => t.name));
-	}
+    // Paranormal items (0.2%)
+    const paranormalItems = priceListData.filter(item => item.rarity === 'P' && item.img);
+    paranormalItems.forEach(item => {
+        crateItems.push({
+            name: item.itemName,
+            rarity: rarityMap[item.rarity] || 'paranormal',
+            value: item.price || 5000,
+            img: item.img
+        });
+    });
+}
 
-	// start spin: choose random item index (within single items array), compute translate, animate via CSS transition
-	function startSpin() {
-		if (isSpinning) return;
-		if (!items || items.length === 0) return;
-		isSpinning = true;
-		spinBtn.disabled = true;
-		resultLabel.classList.add('hidden');
+document.getElementById('spinBtn').addEventListener('click', function() {
+    if (localStorage.getItem('userLoggedIn') !== 'true') {
+        alert('Please login first!');
+        return;
+    }
+    
+    if (crateItems.length === 0) {
+        alert('Loading items...');
+        return;
+    }
+    
+    spinCrate();
+});
 
-		const baseCount = items.length;
-		// pick a target index in base items
-		const targetIndex = Math.floor(Math.random() * baseCount);
-		// choose loops so it spins several times
-		const loops = 3 + Math.floor(Math.random() * 4); // 3..6 loops
-		// compute index in the long repeated list where the desired item will be (pick the item in middle repeats to avoid edge)
-		const repeatOffset = Math.floor(REPEAT_TIMES / 2) * baseCount;
-		const finalTileIndex = repeatOffset + targetIndex; // index within tiles array
+function spinCrate() {
+    const viewport = document.getElementById('crate-viewport');
+    const resultDiv = document.getElementById('crate-result');
+    const spinBtn = document.getElementById('spinBtn');
+    
+    spinBtn.disabled = true;
+    
+    const selectedItem = selectRandomItem(crateItems);
+    
+    animateSpin(viewport, crateItems, selectedItem, function() {
+        resultDiv.innerHTML = `<img src="${selectedItem.img}" alt="${selectedItem.name}" class="w-8 h-8 inline mr-2"><span>${selectedItem.name}</span>`;
+        resultDiv.classList.remove('hidden');
+        
+        // Add item to inventory
+        userDataManager.addInventoryItem({
+            name: selectedItem.name,
+            rarity: selectedItem.rarity,
+            value: selectedItem.value
+        });
+        
+        // Update coins
+        userDataManager.updateCoins(Math.floor(selectedItem.value / 100));
+        
+        spinBtn.disabled = false;
+    });
+}
 
-		const centerOffset = (VIEWPORT_WIDTH / 2) - (TILE_WIDTH / 2);
-		const finalTranslate = -(finalTileIndex * TILE_WIDTH) + centerOffset - (loops * baseCount * TILE_WIDTH);
+function selectRandomItem(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
 
-		// pick duration
-		const duration = 3000 + Math.floor(Math.random() * 2500); // 3-5.5s
+function animateSpin(viewport, items, finalItem, callback) {
+    const itemsPerView = 3;
+    const itemHeight = viewport.offsetHeight / itemsPerView;
+    let currentPosition = 0;
+    let speed = 5;
+    let spinDuration = 0;
+    const maxDuration = 100; // iterations
 
-		// apply transition
-		track.style.transition = `transform ${duration}ms cubic-bezier(.17,.67,.83,.67)`;
-		// force reflow and set transform
-		void track.offsetWidth;
-		track.style.transform = `translateX(${finalTranslate}px)`;
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.transition = 'transform 0.05s linear';
+    
+    viewport.innerHTML = '';
 
-		// on end
-		const onEnd = () => {
-			track.style.transition = '';
-			// calculate landed item name
-			// derive index from transform value
-			const matrix = getComputedStyle(track).transform;
-			let translateX = 0;
-			if (matrix && matrix !== 'none') {
-				const values = matrix.match(/matrix.*\((.+)\)/)[1].split(', ');
-				translateX = parseFloat(values[4]);
-			}
-			// compute which tile is centered
-			const centerOffsetVal = centerOffset;
-			const totalOffset = -translateX + centerOffsetVal;
-			const landedIndex = Math.round(totalOffset / TILE_WIDTH);
-			// read tiles array
-			const tiles = JSON.parse(track.dataset.tiles || '[]');
-			const landedName = tiles[landedIndex] || 'Unknown';
-			showResult(landedName);
+    // Create item elements
+    items.slice(0, 50).forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.style.height = itemHeight + 'px';
+        itemEl.style.display = 'flex';
+        itemEl.style.alignItems = 'center';
+        itemEl.style.justifyContent = 'center';
+        itemEl.style.flexShrink = '0';
+        itemEl.innerHTML = `<img src="${item.img}" alt="${item.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+        container.appendChild(itemEl);
+    });
 
-			isSpinning = false;
-			spinBtn.disabled = false;
-			track.removeEventListener('transitionend', onEnd);
-		};
-		track.addEventListener('transitionend', onEnd);
-	}
+    viewport.appendChild(container);
 
-	function showResult(name) {
-		resultLabel.textContent = `You got: ${name}`;
-		resultLabel.classList.remove('hidden');
-		// simple flash
-		resultLabel.style.opacity = '0';
-		resultLabel.style.transition = 'opacity 300ms';
-		requestAnimationFrame(() => {
-			resultLabel.style.opacity = '1';
-		});
-	}
+    function animate() {
+        spinDuration++;
+        
+        if (spinDuration < maxDuration) {
+            speed = Math.max(1, 10 - (spinDuration / maxDuration) * 8);
+            currentPosition += speed;
+            container.style.transform = `translateY(-${currentPosition}px)`;
+            requestAnimationFrame(animate);
+        } else {
+            // Find final item position
+            const finalIndex = items.findIndex(item => 
+                item.name === finalItem.name && item.rarity === finalItem.rarity
+            );
+            const finalPosition = (finalIndex % 50) * itemHeight;
+            container.style.transform = `translateY(-${finalPosition}px)`;
+            callback();
+        }
+    }
 
-	// init
-	(async function init() {
-		items = await loadItems();
-		buildTrack(items);
-
-		// wire up button
-		spinBtn.addEventListener('click', startSpin);
-	})();
-
-})();
+    animate();
+}
