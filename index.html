@@ -88,15 +88,15 @@
             <h2 class="text-white text-2xl mb-2">Free Crate!</h2>
             <div id="crate-viewport"
                 class="relative w-96 h-36 overflow-hidden rounded-md bg-stone-900/70 border border-stone-700">
-                <!-- added horizontal track for freecrate.js to populate -->
+                <!-- horizontal track populated by freecrate.js -->
                 <div id="crate-track" class="flex items-center h-full will-change-transform"></div>
 
-                <div
-                    class="pointer-events-none absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/80 z-10">
-                </div>
+                <!-- center indicator -->
+                <div class="pointer-events-none absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/80 z-10"></div>
 
+                <!-- result label -->
                 <div id="crate-result"
-                    class="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1 text-sm text-white/90 bg-black/50 px-2 py-0.5 rounded hidden z-20">
+                    class="absolute bottom-1 left-1/2 transform -translate-x-1/2 text-sm text-white/90 bg-black/50 px-2 py-0.5 rounded hidden z-20">
                 </div>
             </div>
 
