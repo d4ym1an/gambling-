@@ -88,14 +88,15 @@
             <h2 class="text-white text-2xl mb-2">Free Crate!</h2>
             <div id="crate-viewport"
                 class="relative w-96 h-36 overflow-hidden rounded-md bg-stone-900/70 border border-stone-700">
-
+                <!-- added horizontal track for freecrate.js to populate -->
+                <div id="crate-track" class="flex items-center h-full will-change-transform"></div>
 
                 <div
-                    class="pointer-events-none absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/80">
+                    class="pointer-events-none absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-0.5 bg-white/80 z-10">
                 </div>
 
                 <div id="crate-result"
-                    class="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1 text-sm text-white/90 bg-black/50 px-2 py-0.5 rounded hidden">
+                    class="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1 text-sm text-white/90 bg-black/50 px-2 py-0.5 rounded hidden z-20">
                 </div>
             </div>
 
@@ -417,6 +418,7 @@
 
     <script src="./js/user-data.js"></script>
     <script src="./js/crate.js"></script>
+    <script src="./js/freecrate.js"></script>
     <script>
         // Initialize Google Sign-In and manage login state
         window.onload = function () {
@@ -427,7 +429,7 @@
             const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
             const userEmail = localStorage.getItem('userEmail');
             updateUIForLoginState(isLoggedIn);
-            
+
             if (isLoggedIn && userEmail) {
                 userDataManager.initializeUser(userEmail);
                 userDataManager.updateCoinDisplay();
@@ -457,7 +459,7 @@
             // Decode JWT to get user email
             const base64Url = response.credential.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             const userData = JSON.parse(jsonPayload);
@@ -469,12 +471,12 @@
 
             // Initialize user data manager
             userDataManager.initializeUser(userEmail);
-            
+
             // Check if new user, otherwise load existing data
             if (!localStorage.getItem(`kirka_user_${userEmail}_coins`)) {
                 userDataManager.createNewUser(userEmail);
             }
-            
+
             userDataManager.updateCoinDisplay();
             updateUIForLoginState(true);
         }
