@@ -364,7 +364,6 @@
     "Value": 0,
     "rarity": "M",
     "type": "VITA",
-    "img":"/imgs/KirkaSkins/VITA/Anarchy-render-3d.webp"
   },
   {
     "itemName": "Andromeda",
@@ -373,7 +372,6 @@
     "Value": 1600000,
     "rarity": "L",
     "type": "MAC-10",
-    "img":"/imgs/KirkaSkins/Mac-10/andromeda-render-3d.webp"
   },
   {
     "itemName": "Angel",
@@ -382,7 +380,6 @@
     "Value": 700000,
     "rarity": "M",
     "type": "Character",
-    "img":"/imgs/KirkaSkins/Character/angel-render-3d.webp"
   },
   {
     "itemName": "Anon",
@@ -391,7 +388,6 @@
     "Value": 0,
     "rarity": "U",
     "type": "Character",
-    "img": "/imgs/KirkaSkins/character/Anon-render-3d.webp"
   },
   {
     "itemName": "Antique",
@@ -400,7 +396,6 @@
     "Value": 0,
     "rarity": "P",
     "type": "Bayonet",
-    "img": "/imgs/KirkaSkins/Bayonet/Antique-render-3d.webp"
   },
   {
     "itemName": "Apollo",
@@ -409,7 +404,6 @@
     "Value": 102500000,
     "rarity": "M",
     "type": "SCAR",
-    "img": "/imgs/KirkaSkins/SCAR/apollo-render-3d.webp"
   },
   {
     "itemName": "Apple",
@@ -418,7 +412,6 @@
     "Value": 0,
     "rarity": "U",
     "type": "Bayonet",
-    "img": "/imgs/KirkaSkins/Bayonet/apple-render-3d.webp"
   },
   {
     "itemName": "APX",
@@ -427,7 +420,6 @@
     "Value": 0,
     "rarity": "U",
     "type": "Character",
-    "img": "/imgs/KirkaSkins/character/APX-render.webp"
   },
   {
     "itemName": "AR-9",
@@ -436,7 +428,6 @@
     "Value": 0,
     "rarity": "C",
     "type": "AR-9",
-    "img":"/imgs/KirkaSkins/AR-9/_AR-9-render-3d.webp"
   },
   {
     "itemName": "Arachne",
@@ -445,7 +436,6 @@
     "Value": 0,
     "rarity": "U",
     "type": "VITA",
-    "img":"/imgs/KirkaSkins/VITA/Archne-render-3d"
   },
   {
     "itemName": "Arc",
