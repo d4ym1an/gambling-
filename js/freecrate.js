@@ -1,163 +1,244 @@
+javascript
 (() => {
-	const ITEMS_JSON = './js/priceList.json';
-	const TILE_WIDTH = 150;
-	const REPEAT_TIMES = 8;
+	// Lootbox / crate behavior that uses existing DOM:
+	// #crate-viewport > #crate-track, #crate-result, and #spinBtn
+	// Loads c:\Users\702064168\Documents\GitHub\gambling-\js\priceList.json (path relative to this script)
 
-
-	const track = document.getElementById('crate-track');
-	const spinBtn = document.getElementById('spinBtn');
-	const resultLabel = document.getElementById('crate-result');
-	const viewport = document.getElementById('crate-viewport');
-
-	let baseItems = [];
-	let isSpinning = false;
-
-	async function tryFetchJson(url) {
+	async function loadPriceList() {
 		try {
-			const res = await fetch(url, { cache: 'no-store' });
-			if (!res.ok) return null;
+			const res = await fetch('./priceList.json');
+			if (!res.ok) throw new Error('Failed to load priceList.json (' + res.status + ')');
 			return await res.json();
-		} catch (e) {
-			console.error('fetch json error', e);
-			return null;
+		} catch (err) {
+			console.error(err);
+			return [];
 		}
 	}
 
-	async function loadItemsFromPriceList() {
-		const json = await tryFetchJson(ITEMS_JSON);
-		if (!Array.isArray(json)) return [];
-
-		const filtered = json.filter(it => it && typeof it.rarity === 'string' && ['C', 'R', 'E'].includes(it.rarity) && it.img);
-		return filtered.map(it => ({
-			src: it.img,
-			name: it.itemName || it.type || it.img
-		}));
+	function el(tag, attrs = {}, children = []) {
+		const node = document.createElement(tag);
+		for (const k in attrs) {
+			if (k === 'class') node.className = attrs[k];
+			else if (k === 'style' && typeof attrs[k] === 'object') Object.assign(node.style, attrs[k]);
+			else if (k.startsWith('data-')) node.setAttribute(k, attrs[k]);
+			else node[k] = attrs[k];
+		}
+		(children || []).forEach(c => node.append(typeof c === 'string' ? document.createTextNode(c) : c));
+		return node;
 	}
 
-	function buildTrack(items) {
-		if (!track) return;
-		track.innerHTML = '';
-		const tiles = [];
-		for (let r = 0; r < REPEAT_TIMES; r++) {
-			for (const it of items) {
-				tiles.push(it);
-			}
+	function weightedRandom(items) {
+		const weights = items.map(it => (typeof it.coefficient === 'number' && it.coefficient > 0 ? it.coefficient : 1));
+		const sum = weights.reduce((a, b) => a + b, 0);
+		if (sum === 0) return items[Math.floor(Math.random() * items.length)];
+		let r = Math.random() * sum;
+		for (let i = 0; i < items.length; i++) {
+			r -= weights[i];
+			if (r <= 0) return items[i];
 		}
-		for (let i = 0; i < tiles.length; i++) {
-			const el = document.createElement('div');
-			el.style.width = TILE_WIDTH + 'px';
-			el.style.flex = `0 0 ${TILE_WIDTH}px`;
-			el.style.height = '100%';
-			el.style.display = 'flex';
-			el.style.alignItems = 'center';
-			el.style.justifyContent = 'center';
-			el.style.boxSizing = 'border-box';
-			el.style.padding = '6px';
-			el.style.background = 'rgba(0,0,0,0.12)';
-			el.style.borderRight = '1px solid rgba(255,255,255,0.03)';
-
-			const img = document.createElement('img');
-			img.src = tiles[i].src;
-			img.alt = tiles[i].name;
-			img.title = tiles[i].name;
-			img.style.maxHeight = '80%';
-			img.style.maxWidth = '100%';
-			img.style.objectFit = 'contain';
-			el.appendChild(img);
-
-			track.appendChild(el);
-		}
-		track.style.width = `${tiles.length * TILE_WIDTH}px`;
-		const viewportWidth = viewport ? viewport.offsetWidth : TILE_WIDTH * 3;
-		const centerOffset = (viewportWidth / 2) - (TILE_WIDTH / 2);
-		track.style.transform = `translateX(${centerOffset}px)`;
-		track.dataset.tiles = JSON.stringify(tiles.map(t => t.name));
-		track.dataset.baseCount = items.length.toString();
+		return items[items.length - 1];
 	}
 
-	function startSpin() {
-		if (isSpinning) return;
-		if (!track || !viewport) return;
-		const tilesJson = track.dataset.tiles || '[]';
-		const tiles = JSON.parse(tilesJson);
-		if (!tiles || tiles.length === 0) return;
+	function formatPrice(p) {
+		if (p == null) return '—';
+		if (p === 0) return '0';
+		return Number(p).toLocaleString();
+	}
 
-		isSpinning = true;
-		if (spinBtn) spinBtn.disabled = true;
-		if (resultLabel) resultLabel.classList.add('hidden');
-
-		const baseCount = parseInt(track.dataset.baseCount || '0', 10) || baseItems.length;
-		if (baseCount === 0) {
-			isSpinning = false;
-			if (spinBtn) spinBtn.disabled = false;
+	document.addEventListener('DOMContentLoaded', async () => {
+		const priceList = await loadPriceList();
+		const viewport = document.getElementById('crate-viewport');
+		const track = document.getElementById('crate-track');
+		const resultEl = document.getElementById('crate-result');
+		const spinBtn = document.getElementById('spinBtn');
+		if (!viewport || !track || !spinBtn || !resultEl) {
+			console.warn('crate elements missing; aborting freecrate script.');
 			return;
 		}
 
+		// Build filter UI just below the viewport
+		const filterBar = el('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginTop: '8px', justifyContent: 'center' } });
+		const maxPriceInput = el('input', { type: 'number', placeholder: 'Max price', style: { padding: '6px', width: '120px' } });
+		const raritySelect = el('select', { style: { padding: '6px' } });
+		const typeSelect = el('select', { style: { padding: '6px' } });
+		const applyBtn = el('button', { style: { padding: '6px 10px' } }, ['Apply']);
+		const resetBtn = el('button', { style: { padding: '6px 10px' } }, ['Reset']);
+		filterBar.append(maxPriceInput, raritySelect, typeSelect, applyBtn, resetBtn);
+		viewport.insertAdjacentElement('afterend', filterBar);
 
-		const targetIndexInBase = Math.floor(Math.random() * baseItems.length);
-		const loops = 3 + Math.floor(Math.random() * 4); // 3..6
-		const repeatOffset = Math.floor(REPEAT_TIMES / 2) * baseCount;
-		const finalTileIndex = repeatOffset + targetIndexInBase + loops * baseCount;
-		const viewportWidth = viewport.offsetWidth;
-		const centerOffset = (viewportWidth / 2) - (TILE_WIDTH / 2);
-		const finalTranslate = - (finalTileIndex * TILE_WIDTH) + centerOffset;
+		// Populate rarity and type selects from dataset
+		const uniq = (arr, k) => Array.from(new Set(arr.map(i => i[k]).filter(Boolean))).sort();
+		const rarities = uniq(priceList, 'rarity');
+		const types = uniq(priceList, 'type');
+		raritySelect.append(el('option', { value: '' }, ['All rarities']));
+		rarities.forEach(r => raritySelect.append(el('option', { value: r }, [r])));
+		typeSelect.append(el('option', { value: '' }, ['All types']));
+		types.forEach(t => typeSelect.append(el('option', { value: t }, [t])));
 
-		const duration = 3000 + Math.floor(Math.random() * 2500);
-		track.style.transition = `transform ${duration}ms cubic-bezier(.17,.67,.83,.67)`;
-		void track.offsetWidth;
-		track.style.transform = `translateX(${finalTranslate}px)`;
+		// Layout constants
+		let itemW = 120; // px width of each card (will be recalculated on resize)
+		const minTrackItems = 48; // make track long enough for good spin animation
+		let renderedItems = []; // array of item objects used in track (may contain duplicates)
 
-		const onEnd = () => {
-			track.removeEventListener('transitionend', onEnd);
-			track.style.transition = '';
-			let translateX = 0;
-			const matrix = getComputedStyle(track).transform;
-			if (matrix && matrix !== 'none') {
-				try {
-					const m = new DOMMatrixReadOnly(matrix);
-					translateX = m.m41;
-				} catch (e) {
-					// older browsers fallback parsing
-					const vals = matrix.match(/matrix.*\((.+)\)/);
-					if (vals && vals[1]) {
-						const arr = vals[1].split(', ');
-						translateX = parseFloat(arr[4]);
-					}
+		function createCard(item) {
+			const card = el('div', { class: 'crate-card', style: { width: itemW + 'px', padding: '6px', boxSizing: 'border-box', textAlign: 'center', flex: '0 0 ' + itemW + 'px' } });
+			const img = el('img', { src: item.img || '', alt: item.itemName || '', style: { width: '100%', height: '60px', objectFit: 'contain', display: 'block' } });
+			img.onerror = () => { img.src = 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="180"><rect fill="%23eee" width="100%" height="100%"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="14">no image</text></svg>'; };
+			const name = el('div', { style: { fontSize: '12px', color: '#fff', marginTop: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, [item.itemName || '']);
+			card.append(img, name);
+			// attach a custom property for lookup
+			card.dataset.itemName = item.itemName || '';
+			return card;
+		}
+
+		function rebuildTrack(filtered) {
+			// keep viewport width in mind
+			const vw = viewport.clientWidth || 384;
+			// choose itemW to show ~3 items across (tweak if necessary)
+			itemW = Math.max(80, Math.floor(vw / 3));
+			// build a sequence by repeating filtered until minTrackItems reached
+			renderedItems = [];
+			if (!filtered.length) {
+				track.innerHTML = '';
+				track.append(el('div', { style: { padding: '12px', color: '#ddd' } }, ['No items for selected filters']));
+				return;
+			}
+			let base = filtered.slice();
+			while (renderedItems.length < minTrackItems) {
+				renderedItems.push(...base);
+			}
+			// add a few extra duplicates to allow landing in middle
+			renderedItems.push(...base.slice(0, 6));
+
+			// render DOM
+			track.innerHTML = '';
+			track.style.display = 'flex';
+			track.style.alignItems = 'center';
+			track.style.transition = 'none';
+			track.style.transform = 'translateX(0px)';
+			renderedItems.forEach(it => {
+				const card = createCard(it);
+				track.appendChild(card);
+			});
+		}
+
+		function applyFilters() {
+			const maxRaw = maxPriceInput.value.trim();
+			const max = maxRaw === '' ? Infinity : Number(maxRaw);
+			const r = raritySelect.value;
+			const t = typeSelect.value;
+			const filtered = priceList.filter(it => {
+				if (Number.isFinite(max) && typeof it.price === 'number' && it.price > max) return false;
+				if (r && (it.rarity || '') !== r) return false;
+				if (t && (it.type || '') !== t) return false;
+				return true;
+			});
+			rebuildTrack(filtered);
+			return filtered;
+		}
+
+		applyBtn.addEventListener('click', applyFilters);
+		resetBtn.addEventListener('click', () => {
+			maxPriceInput.value = '';
+			raritySelect.value = '';
+			typeSelect.value = '';
+			applyFilters();
+		});
+
+		// initial render (no filters)
+		applyFilters();
+
+		// Spin logic
+		let animating = false;
+		let onTransitionEndFn = null;
+		spinBtn.addEventListener('click', () => {
+			if (animating) return;
+			const visiblePool = (() => {
+				const maxRaw = maxPriceInput.value.trim();
+				const max = maxRaw === '' ? Infinity : Number(maxRaw);
+				const r = raritySelect.value;
+				const t = typeSelect.value;
+				return priceList.filter(it => {
+					if (Number.isFinite(max) && typeof it.price === 'number' && it.price > max) return false;
+					if (r && (it.rarity || '') !== r) return false;
+					if (t && (it.type || '') !== t) return false;
+					return true;
+				});
+			})();
+			if (!visiblePool.length) {
+				alert('No items available for current filters.');
+				return;
+			}
+			const picked = weightedRandom(visiblePool);
+
+			// Find one index in renderedItems that matches picked.itemName
+			const names = renderedItems.map(it => it.itemName || '');
+			const firstIdx = names.indexOf(picked.itemName);
+			if (firstIdx === -1) {
+				// if not present (shouldn't happen), rebuild track to include picked front
+				rebuildTrack([picked, ...visiblePool]);
+			}
+
+			// compute final target index: pick the occurrence closest to center after adding loops
+			const occurrenceIndices = [];
+			names.forEach((nm, ix) => { if (nm === picked.itemName) occurrenceIndices.push(ix); });
+			// fallback
+			const occIndex = occurrenceIndices.length ? occurrenceIndices[Math.floor(Math.random() * occurrenceIndices.length)] : 0;
+
+			// choose how many extra loops to spin (3..6)
+			const loops = 3 + Math.floor(Math.random() * 4);
+			const targetIndex = occIndex + loops * Math.max(1, Math.floor(renderedItems.length / 6));
+
+			// compute translate so that the target item is centered in viewport
+			const vw = viewport.clientWidth;
+			const translate = -(targetIndex * itemW) + (vw / 2 - itemW / 2);
+
+			// trigger animation
+			animating = true;
+			// make sure track has enough items to cover translation: if targetIndex beyond current DOM, duplicate DOM
+			const neededExtra = Math.max(0, targetIndex - (track.children.length - 1));
+			if (neededExtra > 0) {
+				// append clones of initial set
+				const baseNodes = Array.from(track.children).slice(0, Math.min(track.children.length, neededExtra + 2));
+				for (let i = 0; i < Math.ceil(neededExtra / baseNodes.length); i++) {
+					baseNodes.forEach(n => track.appendChild(n.cloneNode(true)));
 				}
 			}
-			const approxIndex = Math.round((centerOffset - translateX) / TILE_WIDTH);
-			const tilesArr = JSON.parse(track.dataset.tiles || '[]');
-			const landedName = tilesArr[approxIndex % tilesArr.length] || baseItems[targetIndexInBase].name;
 
-			if (resultLabel) {
-				resultLabel.textContent = `You got: ${landedName}`;
-				resultLabel.classList.remove('hidden');
-				resultLabel.style.opacity = '0';
-				resultLabel.style.transition = 'opacity 300ms';
-				requestAnimationFrame(() => resultLabel.style.opacity = '1');
-			}
+			// set transition length depending on loops
+			const duration = 3000 + loops * 800 + Math.floor(Math.random() * 600); // ms
+			track.style.transition = `transform ${duration}ms cubic-bezier(0.22, 0.9, 0.3, 1)`;
+			// force reflow then set transform
+			track.getBoundingClientRect();
+			track.style.transform = `translateX(${translate}px)`;
 
-			isSpinning = false;
-			if (spinBtn) spinBtn.disabled = false;
-		};
-		track.addEventListener('transitionend', onEnd);
-	}
+			// cleanup previous transition listener
+			if (onTransitionEndFn) track.removeEventListener('transitionend', onTransitionEndFn);
+			onTransitionEndFn = () => {
+				// clear transition and leave transform as-is
+				track.style.transition = 'none';
+				// show result
+				resultEl.textContent = `${picked.itemName || 'Unnamed'} — Price: ${formatPrice(picked.price)} — Rarity: ${picked.rarity || '—'}`;
+				resultEl.classList.remove('hidden');
+				resultEl.style.display = 'block';
+				// small flash on button
+				const orig = spinBtn.textContent;
+				spinBtn.textContent = 'You got: ' + (picked.itemName || 'Unnamed');
+				setTimeout(() => { spinBtn.textContent = orig; }, 3500);
+				animating = false;
+				track.removeEventListener('transitionend', onTransitionEndFn);
+				onTransitionEndFn = null;
+			};
+			track.addEventListener('transitionend', onTransitionEndFn);
+		});
 
-	(async function init() {
-		const items = await loadItemsFromPriceList();
-		if (!items || items.length === 0) {
-			baseItems = [];
-			for (let i = 1; i <= 6; i++) {
-				baseItems.push({
-					src: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${TILE_WIDTH}" height="120"><rect width="100%" height="100%" fill="#2d3748"/><text x="50%" y="50%" font-size="18" fill="#fff" dominant-baseline="middle" text-anchor="middle">Item ${i}</text></svg>`)}`,
-					name: `Item ${i}`
-				});
-			}
-		} else {
-			baseItems = items;
-		}
-		buildTrack(baseItems);
-
-		if (spinBtn) spinBtn.addEventListener('click', startSpin);
-	})();
+		// Recompute card width on resize and rebuild track from current filters
+		let resizeTimer = null;
+		window.addEventListener('resize', () => {
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(() => {
+				applyFilters();
+			}, 150);
+		});
+	});
 })();

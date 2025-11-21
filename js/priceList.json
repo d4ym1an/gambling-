@@ -150,6 +150,7 @@
     "Value": 425000,
     "rarity": "M",
     "type": "Character",
+    "img": "/imgs/KirkaSkins/Character/2025-render-3d.webp"
   },
   {
     "itemName": "2025 Bayonet",
@@ -203,6 +204,7 @@
     "Value": 0,
     "rarity": "U",
     "type": "MAC-10",
+    "img": "/imgs/KirkaSkins/Mac-10/Aberrant-render-3d.webp"
   },
   {
     "itemName": "Abstraction",
@@ -293,7 +295,7 @@
     "rarity": "M",
     "type": "Bayonet",
     "img": "/imgs/KirkaSkins/Bayonet/Alighted-render-3d.webp"
-  }
+  },
   {
     "itemName": "All Spark",
     "price": 0,
@@ -550,6 +552,7 @@
     "Value": 100,
     "rarity": "C",
     "type": "M60",
+    "img": "/imgs/KirkaSkins/M60/Attention-render-3d.webp"
   },
   {
     "itemName": "Aubree",
@@ -1102,6 +1105,7 @@
     "Value": 100,
     "rarity": "C",
     "type": "SCAR",
+    "img": "/imgs/KirkaSkins/SCAR/Camouflage-render-3d.webp" 
   },
   {
     "itemName": "Candy",
@@ -1454,6 +1458,7 @@
     "Value": 2000,
     "rarity": "C",
     "type": "VITA",
+    "img": "/imgs/KirkaSkins/VITA/circuit-render-3d.webp" 
   },
   {
     "itemName": "Citrouille",
@@ -1504,14 +1509,6 @@
     "type": "Bayonet",
   },
   {
-    "itemName": "Cold",
-    "price": 500,
-    "coefficient": 73.8818,
-    "Value": 500,
-    "rarity": "C",
-    "type": "Card"
-  },
-  {
     "itemName": "Color",
     "price": 850000,
     "coefficient": 12556.9288,
@@ -1526,6 +1523,7 @@
     "Value": 100,
     "rarity": "C",
     "type": "Character",
+    "img": "/imgs/KirkaSkins/Character/colton-render-3d.webp"
   },
   {
     "itemName": "Comic AR-9",
@@ -1694,6 +1692,7 @@
     "Value": 100,
     "rarity": "C",
     "type": "VITA",
+    "img": "/imgs/KirkaSkins/VITA/cover-render-3d.webp"
   },
   {
     "itemName": "Crash",
@@ -1702,6 +1701,7 @@
     "Value": 5000,
     "rarity": "L",
     "type": "M60",
+    "img": "/imgs/KirkaSkins/M60/crash-m60-render-3d.webp"
   },
   {
     "itemName": "Crazy",
